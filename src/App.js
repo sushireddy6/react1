@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import './App.css';
 import Person from './Person/Person';
+import Patron from './Patron/patron';
 import axios from 'axios';
 
 const StyledButton = styled.button`
@@ -27,7 +28,20 @@ class App extends Component {
       { id: 'asdf11', name: 'Stephanie', age: 26 }
     ],
     otherState: 'some other value',
-    showPersons: false
+    showPersons: false,
+    patronsData : [
+      {
+          _id: "5ed75e9fe4842e1874422c88",
+          create_date: "2020-06-03T08:26:07.493Z",
+          firstName: "test1",
+          middleName: "test2",
+          lastName: "test3",
+          gender: "M",
+          phone: "0980880980980",
+          __v: 0
+      }
+  ],
+    showPatrons: false
   };
 
   nameChangedHandler = (event, id) => {
@@ -60,9 +74,26 @@ class App extends Component {
     const doesShow = this.state.showPersons;
     this.setState({ showPersons: !doesShow });
   };
+  togglePatronsHandler = () =>{
+    const doesShow = this.state.showPatrons;
+    this.setState({showPatrons: !doesShow});
+  };
 
-  componentDidMount=()=>{
-    axios.get('localhost:8080/api/patrons')
+
+  getPatronsDetails = () => {
+    axios.get('http://localhost:8080/api/patrons')
+    .then(response=>{
+      console.log(response.data);
+      this.setState({patronsData:response.data})
+
+    })
+    .catch(error=>{
+      console.log(error);
+    });
+  }
+  
+  getPatron = (patronId) => {
+    axios.get('http://localhost:8080/api/patrons/'+ patronId)
     .then(response=>{
       console.log(response.data);
     })
@@ -71,15 +102,12 @@ class App extends Component {
     });
   }
 
+
   componentDidMount=()=>{
-    axios.get('localhost:8080/api/patrons/:patron_id')
-    .then(response=>{
-      console.log(response.data);
-    })
-    .catch(error=>{
-      console.log(error);
-    });
+    this.getPatronsDetails();
+    this.getPatron('5ed75e9fe4842e1874422c88');
   }
+
 
   render() {
     const style = {
@@ -96,12 +124,14 @@ class App extends Component {
     };
 
     let persons = null;
+    let patrons = null;
 
     if (this.state.showPersons) {
       persons = (
         <div>
-          {this.state.persons.map((person, index) => {
-            return (
+          {this.state.persons.map((person, index) => 
+            {
+              return (
               <Person
                 click={() => this.deletePersonHandler(index)}
                 name={person.name}
@@ -113,6 +143,24 @@ class App extends Component {
           })}
         </div>
       );
+
+    if(this.state.showPatrons){
+      patrons = (
+        <div>
+          {
+            this.state.patronsData.map((patron,index)=>
+            {
+              return(
+                <Patron 
+                id = {patron._id}
+                name = {patron.firstName+patron.middleName+patron.lastName}
+                />
+              );
+            })
+          }
+        </div>
+      )
+    };
 
       // style.backgroundColor = 'red';
       // style[':hover'] = {
@@ -133,10 +181,10 @@ class App extends Component {
       <div className="App">
         <h1>Hi, I'm a React App</h1>
         <p className={classes.join(' ')}>This is really working!</p>
-        <StyledButton alt={this.state.showPersons} onClick={this.togglePersonsHandler}>
-          Toggle Persons
+        <StyledButton alt={this.state.showPatrons} onClick={this.togglePatronsHandler}>
+          Toggle Patrons
         </StyledButton>
-        {persons}
+        {patrons}
       </div>
     );
     // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Does this work now?'));
